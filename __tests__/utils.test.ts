@@ -304,7 +304,7 @@ describe('utils', () => {
         }
       };
       const { iframe, url } = setup(message);
-      await runIframe(url, state, origin);
+      await runIframe(url, origin);
 
       expect(window.document.body.appendChild).toHaveBeenCalledWith(iframe);
       expect(window.document.body.removeChild).toHaveBeenCalledWith(iframe);
@@ -314,7 +314,7 @@ describe('utils', () => {
         ['src', url]
       ]);
       expect(iframe.style.display).toBe('none');
-      expect(iframe.id).toBe(state);
+      expect(iframe.id).toBe('a0-spajs-iframe');
     });
     describe('with invalid messages', () => {
       [
@@ -336,7 +336,7 @@ describe('utils', () => {
             jest.runAllTimers();
           }, 10);
           jest.useFakeTimers();
-          await expect(runIframe(url, 'id', origin)).rejects.toMatchObject(
+          await expect(runIframe(url, origin)).rejects.toMatchObject(
             TIMEOUT_ERROR
           );
           jest.useRealTimers();
@@ -356,7 +356,7 @@ describe('utils', () => {
         }
       };
       const { iframe, url } = setup(message);
-      await expect(runIframe(url, state, origin)).resolves.toMatchObject(
+      await expect(runIframe(url, origin)).resolves.toMatchObject(
         message.data.response
       );
       expect(window.document.body.removeChild).toHaveBeenCalledWith(iframe);
@@ -373,40 +373,10 @@ describe('utils', () => {
         }
       };
       const { iframe, url } = setup(message);
-      await expect(runIframe(url, state, origin)).rejects.toMatchObject(
+      await expect(runIframe(url, origin)).rejects.toMatchObject(
         message.data.response
       );
       expect(window.document.body.removeChild).toHaveBeenCalledWith(iframe);
-    });
-    //in this test, it will timeout since we're not sending another message later
-    it('does nothing if the message.state is not the same as the input.state', async () => {
-      const inputState = 'state';
-      const origin = 'https://origin.com';
-      const message = {
-        origin,
-        source: { close: jest.fn() },
-        data: {
-          type: 'authorization_response',
-          response: { id_token: 'id_token', state: 'message-state' }
-        }
-      };
-      const { iframe, url } = setup(message);
-
-      /**
-       * We need to run the timers after we start `runIframe` to simulate
-       * the window event listener, but we also need to use `jest.useFakeTimers`
-       * to trigger the timeout. That's why we're using a real `setTimeout`,
-       * then using fake timers then rolling back to real timers
-       */
-      setTimeout(() => {
-        jest.runAllTimers();
-      }, 10);
-      jest.useFakeTimers();
-      await expect(runIframe(url, inputState, origin)).rejects.toMatchObject(
-        TIMEOUT_ERROR
-      );
-      expect(window.document.body.removeChild).toHaveBeenCalledWith(iframe);
-      jest.useRealTimers();
     });
     it('times out after 60s', async () => {
       const { iframe, url, origin } = setup('');
@@ -420,9 +390,7 @@ describe('utils', () => {
         jest.runAllTimers();
       }, 10);
       jest.useFakeTimers();
-      await expect(runIframe(url, 'id', origin)).rejects.toMatchObject(
-        TIMEOUT_ERROR
-      );
+      await expect(runIframe(url, origin)).rejects.toMatchObject(TIMEOUT_ERROR);
       expect(window.document.body.removeChild).toHaveBeenCalledWith(iframe);
       jest.useRealTimers();
     });
