@@ -3,8 +3,8 @@
   <head>
     <title>Auth0</title>
     <meta charset="utf-8" />
-    <script src="/auth0-spa-js.development.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="/auth0-spa-js.development.legacy.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
   </head>
 
   <body>
@@ -14,7 +14,8 @@
     <button id="login_popup">Login popup</button>
     <button id="login_redirect">Login redirect</button>
     <button id="login_redirect_callback">Login redirect callback</button>
-    <button id="login">Login</button> <button id="getUser">Get user</button>
+    <button id="getUser">Get user</button>
+    <button id="getIdTokenClaims">Get id_token decoded</button>
     <button id="getToken">Get access token with no interaction</button>
     <button id="getTokenPopup">Get access token with a popup</button>
     <button id="getToken_audience">
@@ -24,21 +25,87 @@
     <button id="logout-no-clientid">logout (no client id)</button>
     <script type="text/javascript">
       $(function() {
-        createAuth0Client({
-          domain: 'auth.brucke.club',
-          client_id: 'wLSIP47wM39wKdDmOj6Zb5eSEw3JVhVp'
-        }).then(function(auth0) {
-          $('#login_popup').click(function() {
-            auth0
-              .loginWithPopup({
-                redirect_uri: 'http://localhost:3000/callback.html'
-              })
-              .then(function() {
-                auth0.getTokenSilently().then(function(token) {});
-                auth0.getUser().then(function(user) {});
-              });
+        $('#login_popup').on('click', function() {
+          auth0.loginWithPopup().then(function() {
+            auth0.getTokenSilently().then(function(token) {
+              console.log(token);
+            });
+            auth0.getUser().then(function(user) {
+              console.log(user);
+            });
           });
         });
+        $('#login_redirect').on('click', function() {
+          auth0.loginWithRedirect();
+        });
+        $('#login_redirect_callback').on('click', function() {
+          auth0.handleRedirectCallback().then(function() {
+            window.history.pushState(null, document.title, location.pathname);
+          });
+        });
+        $('#getToken').on('click', function() {
+          auth0.getTokenSilently().then(function(token) {
+            console.log(token);
+          });
+        });
+
+        $('#getTokenPopup').on('click', function() {
+          auth0
+            .getTokenSilently({
+              audience: 'https://brucke.auth0.com/api/v2/',
+              scope: 'read:rules'
+            })
+            .then(function(token) {
+              console.log(token);
+            });
+        });
+        $('#getUser').on('click', function() {
+          console.log('getUser');
+          auth0.getUser().then(function(user) {
+            console.log('user');
+            console.log(user);
+          });
+        });
+        $('#getIdTokenClaims').on('click', function() {
+          auth0.getIdTokenClaims().then(function(claims) {
+            console.log(claims);
+          });
+        });
+        $('#getToken_audience').on('click', function() {
+          const differentAudienceOptions = {
+            audience: 'https://brucke.auth0.com/api/v2/',
+            scope: 'read:rules',
+            redirect_uri: 'http://localhost:3000/callback.html'
+          };
+          auth0
+            .getTokenSilently(differentAudienceOptions)
+            .then(function(token) {
+              console.log(token);
+            });
+        });
+        $('#logout').on('click', function() {
+          auth0.logout({
+            returnTo: 'http://localhost:3000/'
+          });
+        });
+        $('#logout-no-clientid').on('click', function() {
+          auth0.logout({
+            client_id: null,
+            returnTo: 'http://localhost:3000/'
+          });
+        });
+        createAuth0Client({
+          domain: 'auth.brucke.club',
+          client_id: 'wLSIP47wM39wKdDmOj6Zb5eSEw3JVhVp',
+          redirect_uri: 'http://localhost:3000/index.legacy.html'
+        })
+          .then(function(auth0) {
+            console.log('READY!');
+            window.auth0 = auth0;
+          })
+          .catch(function(e) {
+            console.log(e);
+          });
       });
     </script>
   </body>

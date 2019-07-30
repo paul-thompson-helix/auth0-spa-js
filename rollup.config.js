@@ -57,6 +57,15 @@ let bundles = [
     watch: {
       clearScreen: false
     }
+  },
+  {
+    input: 'src/legacy.ts',
+    output: {
+      name: EXPORT_NAME,
+      file: 'dist/auth0-spa-js.development.legacy.js',
+      format: 'umd'
+    },
+    plugins: getPlugins(false, { target: 'es5' })
   }
 ];
 
