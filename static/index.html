@@ -30,7 +30,6 @@
           domain: 'auth.brucke.club',
           client_id: 'wLSIP47wM39wKdDmOj6Zb5eSEw3JVhVp'
         });
-        console.log('ready');
         $('#login_redirect').click(async () => {
           await auth0.loginWithRedirect({
             redirect_uri: 'http://localhost:3000/'
