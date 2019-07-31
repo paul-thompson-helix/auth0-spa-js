@@ -1,4 +1,5 @@
 import * as qs from 'qs';
+import { InternalError } from './errors';
 const TIMEOUT_ERROR = { error: 'timeout', error_description: 'Timeout' };
 export const getUniqueScopes = (...scopes: string[]) => {
   const scopeString = scopes.filter(Boolean).join();
@@ -16,8 +17,13 @@ export const parseQueryResult = (hash: string) => {
 };
 
 export const runIframe = (authorizeUrl: string, eventOrigin: string) => {
+  const IFRAME_ID = 'a0-spajs-iframe';
+  if (document.getElementById(IFRAME_ID)) {
+    throw new InternalError(
+      '`getTokenSilently` can only be called once at a time'
+    );
+  }
   return new Promise<AuthenticationResult>((res, rej) => {
-    const IFRAME_ID = 'a0-spajs-iframe';
     var iframe = window.document.createElement('iframe');
     iframe.setAttribute('width', '0');
     iframe.setAttribute('height', '0');
